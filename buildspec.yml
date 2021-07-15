@@ -1,0 +1,27 @@
+version: 0.2
+phases:
+   pre_build:
+      commands:
+      - echo "Entered the pre-build phase"
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 876983010549.dkr.ecr.ap-south-1.amazonaws.com
+      - REPOSITORY_URI=876983010549.dkr.ecr.ap-south-1.amazonaws.com/authentication_ms
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+   build:
+      commands:
+      - echo "Entered build phase"
+      - mvn compile
+      - mvn -DskipTests clean package
+      - echo " building docker image"
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+   post_build:
+      commands:
+      - echo "Entered the post-build phase"
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"Authentication-MS","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > taskdefinition.json
+      - cat taskdefinition.json 
+artifacts:
+   files:
+   - taskdefinition.json
