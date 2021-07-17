@@ -21,7 +21,10 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
       - printf '[{"name":"Authentication-MS","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > taskdefinition.json
-      - cat taskdefinition.json 
+      - cat taskdefinition.json
+      - printf '[{"name":"auth-ms","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
 artifacts:
    files:
    - taskdefinition.json
+   - imagedefinitions.json
